@@ -23,8 +23,8 @@ amount = st.number_input("Amount to exchange", min_value=1)
 
 if st.button("Run"):
           # Get forex data
-          start_date = pd.to_datetime('2020-01-01')
-          end_date = pd.to_datetime(pd.Timestamp.today().date())
+          start_date = '2020-01-01'
+          end_date = pd.Timestamp.today().date().strftime('%Y-%m-%d')
 
           forex_data = {}
           for i in range(len(currency_list)):
