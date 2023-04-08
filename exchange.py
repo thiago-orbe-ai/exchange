@@ -15,10 +15,13 @@ forex_graph = np.array([
 
 # Define the Bellman-Ford function
 def bellman_ford(forex_graph, source):
-    # Initialize the distances to infinity
+    # Initialize the distances and best routes to infinity and None respectively
     distances = np.full(len(forex_graph), np.inf)
+    best_routes = [None] * len(forex_graph)
+    
+    # Set the distance to the source to zero
     distances[source] = 0.0
-
+    
     # Iterate over all edges n - 1 times
     for i in range(len(forex_graph) - 1):
         # Iterate over all edges
@@ -26,8 +29,9 @@ def bellman_ford(forex_graph, source):
             for k in range(len(forex_graph)):
                 if forex_graph[j][k] != 0.0 and distances[j] + forex_graph[j][k] < distances[k]:
                     distances[k] = distances[j] + forex_graph[j][k]
+                    best_routes[k] = j
 
-    return distances
+    return distances, best_routes
 
 # Define the Streamlit app
 st.title('Forex Bellman-Ford')
@@ -39,10 +43,46 @@ source = st.selectbox('Select the source currency pair:', ['EUR/USD', 'USD/JPY',
 source_map = {'EUR/USD': 0, 'USD/JPY': 1, 'GBP/USD': 2, 'USD/CHF': 3, 'USD/CAD': 4, 'AUD/USD': 5, 'NZD/USD': 6}
 source_index = source_map[source]
 
-# Compute the shortest distances using Bellman-Ford
-distances = bellman_ford(forex_graph, source_index)
+# Compute the shortest distances and best routes using Bellman-Ford
+distances, best_routes = bellman_ford(forex_graph, source_index)
 
-# Display the shortest distances
-for i, distance in enumerate(distances):
-    if i != source_index:
-        st.write(f"{source} to {'EUR/USD' if i == 0 else 'USD/JPY' if i == 1 else 'GBP/USD' if i == 2 else 'USD/CHF' if i == 3 else 'USD/CAD' if i == 4 else 'AUD/USD' if i == 5 else 'NZD/USD'}: {distance}")
+# Display the best route as a chart
+chart_data = {
+    'source: [source],
+'destination': ['EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF', 'USD/CAD', 'AUD/USD', 'NZD/USD'],
+'distance': distances,
+'best_route': best_routes
+}
+st.write(chart_data)
+
+# Highlight the best route in the chart
+best_routes = [best_routes[i] for i in range(len(best_routes))]
+
+# Create a dictionary to map currency pairs to their colors in the chart
+color_map = {
+    'EUR/USD': 'blue',
+    'USD/JPY': 'orange',
+    'GBP/USD': 'green',
+    'USD/CHF': 'red',
+    'USD/CAD': 'purple',
+    'AUD/USD': 'brown',
+    'NZD/USD': 'pink'
+}
+
+# Create a list of colors for the edges in the chart
+edge_colors = [color_map[chart_data['destination'][i]] for i in range(len(chart_data['destination']))]
+
+# Create a list of edge labels for the chart
+edge_labels = [f"Best route: {chart_data['source'][best_routes[i]]} -> {chart_data['destination'][i]}" if best_routes[i] is not None else "" for i in range(len(best_routes))]
+
+# Create the chart
+st.graphviz_chart(f"""
+digraph {{
+    node [style=filled]
+    {source} [color=black, fillcolor=gray]
+    {"; ".join(chart_data['destination'])}
+    {"; ".join([f"{chart_data['source'][i]} -> {chart_data['destination'][i]} [label={chart_data['distance'][i]}]" for i in range(len(chart_data['destination']))])}
+    {"; ".join([f"{chart_data['source'][best_routes[i]]} -> {chart_data['destination'][i]} [color={color_map[chart_data['destination'][i]]}, label=\"{edge_labels[i]}\"]" for i in range(len(best_routes)) if best_routes[i] is not None])}
+}}
+""", engine='dot', format='svg', edge_attributes={'color': edge_colors})
+
