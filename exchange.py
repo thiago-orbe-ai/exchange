@@ -16,7 +16,7 @@ amount = st.number_input("Amount to exchange", min_value=1)
 
 # Get forex data
 start_date = pd.to_datetime('2020-01-01')
-end_date = pd.to_datetime('today')
+end_date = pd.to_datetime(pd.Timestamp.today().date())
 
 forex_data = pdr.get_data_yahoo(f"{currency_from}{currency_to}=X", start_date, end_date)
 
