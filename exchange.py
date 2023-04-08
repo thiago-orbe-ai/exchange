@@ -1,3 +1,10 @@
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import networkx as nx
+import yfinance as yf
+
 def get_exchange_rates(currencies):
     # Create an empty DataFrame with currencies as columns and index
     df = pd.DataFrame(columns=currencies, index=currencies)
