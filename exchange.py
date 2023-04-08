@@ -49,26 +49,3 @@ st.write("Distance from", source_currency)
 for i in range(len(currency_pairs)):
     if i != source_index:
         st.write(source_currency, "to", currency_pairs[i], "=", distances[i])
-
-# Highlight the best route in the chart
-best_routes = [best_routes[i] for i in range(len(best_routes))]
-
-# Create a dictionary to map currency pairs to their colors in the chart
-color_map = {
-    'EUR/USD': 'blue',
-    'USD/JPY': 'orange',
-    'GBP/USD': 'green',
-    'USD/CHF': 'red',
-    'USD/CAD': 'purple',
-    'AUD/USD': 'brown',
-    'NZD/USD': 'pink'
-}
-
-# Display the chart
-st.line_chart(chart_data, use_container_width=True)
-
-# Highlight the best route in the chart
-for i in range(len(best_routes)):
-    if best_routes[i] is not None:
-        st.line_chart([chart_data['distance'][i], chart_data['distance'][best_routes[i]]], use_container_width=True, 
-                          line_color=color_map[currency_pairs[i]])
