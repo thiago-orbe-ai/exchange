@@ -34,40 +34,40 @@ currency_pairs = ['EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF', 'USD/CAD', 'AUD/US
 # Define a dictionary to map currency pairs to their indices in the distance matrix
 currency_index = {currency_pairs[i]: i for i in range(len(currency_pairs))}
 
-    # Create a dropdown to select the source currency pair
-    source_currency = st.selectbox("Select the source currency pair", currency_pairs)
+# Create a dropdown to select the source currency pair
+source_currency = st.selectbox("Select the source currency pair", currency_pairs)
 
-    # Get the index of the source currency pair
-    source_index = currency_index[source_currency]
+# Get the index of the source currency pair
+source_index = currency_index[source_currency]
 
-    # Calculate the shortest distances and best routes
-    distances, best_routes = bellman_ford(distances, source_index)
+# Calculate the shortest distances and best routes
+distances, best_routes = bellman_ford(distances, source_index)
 
-    # Display the results
-    st.write("Distance from", source_currency)
-    for i in range(len(currency_pairs)):
-        if i != source_index:
-            st.write(source_currency, "to", currency_pairs[i], "=", distances[i])
+# Display the results
+st.write("Distance from", source_currency)
+for i in range(len(currency_pairs)):
+    if i != source_index:
+        st.write(source_currency, "to", currency_pairs[i], "=", distances[i])
 
-    # Highlight the best route in the chart
-    best_routes = [best_routes[i] for i in range(len(best_routes))]
+# Highlight the best route in the chart
+best_routes = [best_routes[i] for i in range(len(best_routes))]
 
-    # Create a dictionary to map currency pairs to their colors in the chart
-    color_map = {
-        'EUR/USD': 'blue',
-        'USD/JPY': 'orange',
-        'GBP/USD': 'green',
-        'USD/CHF': 'red',
-        'USD/CAD': 'purple',
-        'AUD/USD': 'brown',
-        'NZD/USD': 'pink'
-    }
+# Create a dictionary to map currency pairs to their colors in the chart
+color_map = {
+    'EUR/USD': 'blue',
+    'USD/JPY': 'orange',
+    'GBP/USD': 'green',
+    'USD/CHF': 'red',
+    'USD/CAD': 'purple',
+    'AUD/USD': 'brown',
+    'NZD/USD': 'pink'
+}
 
-    # Display the chart
-    st.line_chart(chart_data, use_container_width=True)
+# Display the chart
+st.line_chart(chart_data, use_container_width=True)
 
-    # Trace the best route
-    st.write("Best route:")
-    for i in range(len(best_routes)):
-        if best_routes[i] is not None:
-            st.write(currency_pairs[i], "->", currency_pairs[best_routes[i]], "(Distance =", distances[best_routes[i]], ")")
+# Trace the best route
+st.write("Best route:")
+for i in range(len(best_routes)):
+    if best_routes[i] is not None:
+        st.write(currency_pairs[i], "->", currency_pairs[best_routes[i]], "(Distance =", distances[best_routes[i]], ")")
