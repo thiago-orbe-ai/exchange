@@ -21,7 +21,10 @@ end_date = pd.to_datetime(pd.Timestamp.today().date())
 forex_data = pdr.get_data_yahoo(f"{currency_from}{currency_to}=X", start_date, end_date)
 
 # Calculate the best forex route
-routes = [['USD', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'EUR', 'USD']]
+routes = [['USD', 'EUR', 'JPY', 'USD'], 
+          ['USD', 'EUR', 'JPY', 'EUR', 'USD'], 
+          ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'USD'], 
+          ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'EUR', 'USD']]
 best_route = None
 best_rate = None
 if st.button("Run"):
