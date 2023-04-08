@@ -58,4 +58,22 @@ for i in range(len(currency_pairs)):
         chart_data.loc[currency_pairs[i], 'cumulative_distance'] = -best_distances[i]
 
 # Display the chart
-st
+#Display the chart
+st.line_chart(chart_data['cumulative_distance'], use_container_width=True)
+
+#Trace the best route
+st.write("Best route:")
+for i in range(len(best_routes)):
+    if best_routes[i] is not None:
+        st.write(currency_pairs[i], "->", currency_pairs[best_routes[i]], "(Distance =", -best_distances[i], ")")
+
+#Trace the complete route for the best scenario
+if best_routes[-1] is not None:
+    complete_route = [currency_pairs[-1]]
+    current_currency = currency_pairs[-1]
+    while current_currency != currency_pairs[0]:
+        current_currency = currency_pairs[best_routes[currency_index[current_currency]]]
+        complete_route.insert(0, current_currency)
+        st.write("Complete route:", "->".join(complete_route))
+else:
+    st.write("No route found")
