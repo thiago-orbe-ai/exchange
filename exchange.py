@@ -63,8 +63,14 @@ color_map = {
     'NZD/USD': 'pink'
 }
 
+# Add a new column to the chart_data DataFrame with the cumulative distances of the best route
+chart_data['cumulative_distance'] = np.zeros(len(currency_pairs))
+for i in range(len(best_routes)):
+    if best_routes[i] is not None:
+        chart_data.loc[i, 'cumulative_distance'] = distances[best_routes[i]]
+
 # Display the chart
-st.line_chart(chart_data['distance'], use_container_width=True)
+st.line_chart(chart_data['cumulative_distance'], use_container_width=True)
 
 # Trace the best route
 st.write("Best route:")
