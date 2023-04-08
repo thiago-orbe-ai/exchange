@@ -1,3 +1,4 @@
+# Import the required libraries
 import numpy as np
 import streamlit as st
 
@@ -9,6 +10,7 @@ forex_graph = np.array([
     [1.25, 1.43, 0.83, 0.0]
 ])
 
+# Define the Bellman-Ford function
 def bellman_ford(forex_graph, source):
     # Initialize the distances to infinity
     distances = np.full(len(forex_graph), np.inf)
@@ -37,4 +39,7 @@ source_index = source_map[source]
 # Compute the shortest distances using Bellman-Ford
 distances = bellman_ford(forex_graph, source_index)
 
-# Display the
+# Display the shortest distances
+for i, distance in enumerate(distances):
+    if i != source_index:
+        st.write(f"{source} to {'USD/EUR' if i == 0 else 'USD/GBP' if i == 1 else 'USD/JPY' if i == 2 else 'EUR/GBP'}: {distance:.2f}")
