@@ -6,11 +6,15 @@ import yfinance as yf
 
 # Calculate the best forex route
 def calculate_rate(route):
-    rate = 1
-    for i in range(len(route)-1):
-        pair = f"{route[i]}{route[i+1]}=X"
-        rate *= forex_data[pair]['Close'].iloc[-1]
+    forex_rates = {}
+    for route in routes:
+        rate = 1
+        for i in range(len(route)-1):
+            pair = f"{route[i]}{route[i+1]}=X"
+            rate *= forex_data[pair]['Close'].iloc[-1]
+        forex_rates[' -> '.join(route)] = rate
     return rate
+
 
 # Define the app layout
 st.title("Forex Route Optimizer")
