@@ -22,9 +22,10 @@ def bellman_ford(currencies):
     return distances
 
 currencies = st.text_input("Enter currencies separated by commas (e.g. USD,EUR,GBP)").upper().split(",")
-if len(currencies) > 1:
-    distances = bellman_ford(currencies)
-    st.write(f"The best route is {currencies[0]} -> {currencies[-1]}")
-    st.write(f"The total exchange rate is {distances[-1]}")
-else:
-    st.write("Please enter at least two currencies.")
+if st.button("Run"):
+    if len(currencies) > 1:
+        distances = bellman_ford(currencies)
+        st.write(f"The best route is {currencies[0]} -> {currencies[-1]}")
+        st.write(f"The total exchange rate is {distances[-1]}")
+    else:
+        st.write("Please enter at least two currencies.")
