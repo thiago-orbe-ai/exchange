@@ -47,29 +47,38 @@ st.title("Forex Arbitrage Finder")
 st.write("Currency pairs:")
 st.write(pd.DataFrame(exchange_rates, index=currency_pairs, columns=currency_pairs))
 
-# Select the source currency
-source_currency = st.selectbox("Select the source currency:", currency_pairs)
+# Define the optimization function
+def optimize_route(distances, best_routes):
+    # Loop through all possible triangles
+    for i in range(len(distances)):
+        for j in range(len(distances)):
+            if i != j and best_routes[i] is not None and best_routes[j] is not None:
+                for k in range(len(distances)):
+                    if k != i and k != j and best_routes[k] is not None:
+                        # Calculate the sum of the distances for this triangle
+                        distance_sum = distances[best_routes[i]] + distances[best_routes[j]] + distances[best_routes[k]]
+                        # Check if the sum is negative
+                        if distance_sum < 0:
+                            # There is an opportunity for arbitrage, so re-arrange the route
+                            new_route = [best_routes[i], best_routes[j], best_routes[k]]
+                            new_distances = [distances[new_route[0]], distances[new_route[1]], distances[new_route[2]]]
+                            # Check if the new route is better than the old one
+                            if sum(new_distances) < sum([distances[best_routes[i]], distances[best_routes[j]], distances[best_routes[k]]]):
+                                best_routes[i] = new_route[0]
+                                best_routes[j] = new_route[1]
+                                best_routes[k] = new_route[2]
+    return best_routes
 
-# Run the Bellman-Ford algorithm
-distances, best_routes, currency_pairs = bellman_ford(currency_pairs.index(source_currency), currency_pairs, exchange_rates)
+# Run the optimization function
+best_routes = optimize_route(distances, best_routes)
 
-# Display the results
-if distances is None:
-    st.write("Negative cycle detected")
-else:
-    # Create a dataframe to display the distances and best routes
-    data = {"Distance": distances, "Best Route": best_routes}
-    df = pd.DataFrame(data, index=currency_pairs)
-    st.write("Distances and Best Routes:")
-    st.write(df)
-    
-    # Create a chart to show the best route
-    chart_data = pd.DataFrame({"distance": distances, "currency_pair": currency_pairs})
-    chart_data = chart_data.sort_values(by="distance", ascending=False)
-    st.line_chart(chart_data, use_container_width=True)
+# Create a chart to show the optimized route
+chart_data = pd.DataFrame({"distance": distances, "currency_pair": currency_pairs})
+chart_data = chart_data.sort_values(by="distance", ascending=False)
+st.line_chart(chart_data, use_container_width=True)
 
-    # Trace the best route
-    st.write("Best route:")
-    for i in range(len(best_routes)):
-        if best_routes[i] is not None:
-            st.write(currency_pairs[i], "->", currency_pairs[best_routes[i]], "(Distance =", distances[best_routes[i]], ")")
+# Trace the optimized route
+st.write("Optimized route:")
+for i in range(len(best_routes)):
+    if best_routes[i] is not None:
+        st.write(currency_pairs[i], "->", currency_pairs[best_routes[i]], "(Distance =", distances[best_routes[i]], ")")
