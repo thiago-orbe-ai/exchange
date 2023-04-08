@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas_datareader.data as web
+from pandas_datareader import data as pdr
+import yfinance as yf
 
 # Define the app layout
 st.title("Forex Route Optimizer")
@@ -16,7 +17,8 @@ amount = st.number_input("Amount to exchange", min_value=1)
 # Get forex data
 start_date = pd.to_datetime('2020-01-01')
 end_date = pd.to_datetime('today')
-forex_data = web.DataReader(f"{currency_from}{currency_to}", 'yahoo', start_date, end_date)
+
+forex_data = pdr.get_data_yahoo(f"{currency_from}{currency_to}=X", start_date, end_date)
 
 # Calculate the best forex route
 routes = [['USD', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'EUR', 'USD']]
@@ -25,8 +27,8 @@ best_rate = None
 for route in routes:
     rate = 1
     for i in range(len(route)-1):
-        pair = f"{route[i]}/{route[i+1]}"
-        rate *= web.DataReader(pair, 'google', start_date, end_date)['Close'].iloc[-1]
+        pair = f"{route[i]}{route[i+1]}=X"
+        rate *= pdr.get_data_yahoo(pair, start_date, end_date)['Close'].iloc[-1]
     if not best_rate or rate > best_rate:
         best_rate = rate
         best_route = route
