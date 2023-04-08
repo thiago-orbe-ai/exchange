@@ -46,4 +46,4 @@ def app():
     # Display the shortest distances
     for i, distance in enumerate(distances):
         if i != source_index:
-            st.write(f"{source} to {'EUR/USD' if i == 0 else 'USD/JPY' if i == 1 else 'GBP/USD' if i == 2 else 'USD/CHF' if i == 3 else 'USD/CAD' if i == 4 else 'AUD/USD' if
+            st.write(f"{source} to {'EUR/USD' if i == 0 else 'USD/JPY' if i == 1 else 'GBP/USD' if i == 2 else 'USD/CHF' if i == 3 else 'USD/CAD' if i == 4 else 'AUD/USD' if i == 5 else 'NZD/USD'}: {distance}")
