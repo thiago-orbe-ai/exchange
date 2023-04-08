@@ -2,5 +2,5 @@ streamlit
 pandas
 yfinance
 numpy
-PyPortfolioOpt
-deap
+networkx
+matplotlib
