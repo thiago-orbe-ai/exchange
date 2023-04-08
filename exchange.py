@@ -59,7 +59,7 @@ start_currency = st.selectbox
 
 # Select the starting currency
 start_currency = st.selectbox("Select starting currency", currencies)
-IF st.button("Run"):
+if st.button("Run"):
     # Compute the best route
     best_route = get_best_route(exchange_rates, start_currency)
 
