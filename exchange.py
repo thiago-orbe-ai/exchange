@@ -1,8 +1,8 @@
 import streamlit as st
-import yfinance as yf
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas_datareader.data as web
 
 # Define the app layout
 st.title("Forex Route Optimizer")
@@ -14,25 +14,24 @@ currency_to = st.selectbox("To", currency_list)
 amount = st.number_input("Amount to exchange", min_value=1)
 
 # Get forex data
-forex_data = yf.download(f"{currency_from}{currency_to}=X")["Close"]
+start_date = pd.to_datetime('2020-01-01')
+end_date = pd.to_datetime('today')
+forex_data = web.DataReader(f"{currency_from}{currency_to}", 'yahoo', start_date, end_date)
 
-# Calculate the best forex route
 # Calculate the best forex route
 routes = [['USD', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'EUR', 'USD']]
 best_route = None
 best_rate = None
-if st.button("RUN"):
-    for route in routes:
-        rate = 1
-        for i in range(len(route)-1):
-            pair = f"{route[i]}{route[i+1]}=X"
-            rate *= forex_data.loc[pair][0]
-        if not best_rate or rate > best_rate:
-            best_rate = rate
-            best_route = route
+for route in routes:
+    rate = 1
+    for i in range(len(route)-1):
+        pair = f"{route[i]}/{route[i+1]}"
+        rate *= web.DataReader(pair, 'google', start_date, end_date)['Close'].iloc[-1]
+    if not best_rate or rate > best_rate:
+        best_rate = rate
+        best_route = route
 
-
-    # Display the results
-    st.write(f"The best route to exchange {currency_from} to {currency_to} is {' -> '.join(best_route)}")
-    st.write(f"The exchange rate is {round(best_rate, 4)}")
-    st.write(f"The amount received is {round(amount*best_rate, 2)} {currency_to}")
+# Display the results
+st.write(f"The best route to exchange {currency_from} to {currency_to} is {' -> '.join(best_route)}")
+st.write(f"The exchange rate is {round(best_rate, 4)}")
+st.write(f"The amount received is {round(best_rate * amount, 2)} {currency_to}")
