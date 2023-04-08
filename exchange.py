@@ -1,59 +1,54 @@
-# Import the required libraries
-import numpy as np
 import streamlit as st
+import numpy as np
 
-# Define the forex graph
-forex_graph = np.array([
-    [0.0, 1.17, 1.38, 0.92, 0.78, 110.68, 0.92],
-    [0.85, 0.0, 1.18, 0.79, 0.67, 95.50, 0.85],
-    [0.72, 0.85, 0.0, 0.67, 0.57, 80.12, 0.67],
-    [1.09, 1.29, 1.49, 0.0, 1.18, 132.17, 1.11],
-    [1.28, 1.51, 1.75, 0.84, 0.0, 150.51, 0.84],
-    [0.009, 0.010, 0.012, 0.005, 0.007, 0.0, 0.005],
-    [1.09, 1.29, 1.49, 0.84, 1.18, 132.17, 0.0]
-])
+def bellman_ford(adj_matrix, source):
+    n = len(adj_matrix)
+    distances = [np.inf for i in range(n)]
+    distances[source] = 0
+    best_routes = [None for i in range(n)]
 
-# Define the Bellman-Ford function
-def bellman_ford(forex_graph, source):
-    # Initialize the distances and best routes to infinity and None respectively
-    distances = np.full(len(forex_graph), np.inf)
-    best_routes = [None] * len(forex_graph)
-    
-    # Set the distance to the source to zero
-    distances[source] = 0.0
-    
-    # Iterate over all edges n - 1 times
-    for i in range(len(forex_graph) - 1):
-        # Iterate over all edges
-        for j in range(len(forex_graph)):
-            for k in range(len(forex_graph)):
-                if forex_graph[j][k] != 0.0 and distances[j] + forex_graph[j][k] < distances[k]:
-                    distances[k] = distances[j] + forex_graph[j][k]
-                    best_routes[k] = j
+    for k in range(n-1):
+        for i in range(n):
+            for j in range(n):
+                if adj_matrix[i][j] != 0:
+                    if distances[i] + adj_matrix[i][j] < distances[j]:
+                        distances[j] = distances[i] + adj_matrix[i][j]
+                        best_routes[j] = i
 
     return distances, best_routes
 
-# Define the Streamlit app
-st.title('Forex Bellman-Ford')
+# Define the distances between major currency pairs
+distances = [
+    [0, 0.8, 1.3, 1.0, 1.2, 1.5, 1.9],
+    [0.8, 0, 1.1, 0.9, 0.9, 1.2, 1.6],
+    [1.3, 1.1, 0, 1.7, 1.6, 1.8, 2.1],
+    [1.0, 0.9, 1.7, 0, 0.8, 1.1, 1.5],
+    [1.2, 0.9, 1.6, 0.8, 0, 1.3, 1.7],
+    [1.5, 1.2, 1.8, 1.1, 1.3, 0, 0.4],
+    [1.9, 1.6, 2.1, 1.5, 1.7, 0.4, 0]
+]
 
-# Get the source currency pair from the user
-source = st.selectbox('Select the source currency pair:', ['EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF', 'USD/CAD', 'AUD/USD', 'NZD/USD'])
+# Define the major currency pairs
+currency_pairs = ['EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF', 'USD/CAD', 'AUD/USD', 'NZD/USD']
 
-# Map the currency pair to an index in the forex graph
-source_map = {'EUR/USD': 0, 'USD/JPY': 1, 'GBP/USD': 2, 'USD/CHF': 3, 'USD/CAD': 4, 'AUD/USD': 5, 'NZD/USD': 6}
-source_index = source_map[source]
+# Define a dictionary to map currency pairs to their indices in the distance matrix
+currency_index = {currency_pairs[i]: i for i in range(len(currency_pairs))}
 
-# Compute the shortest distances and best routes using Bellman-Ford
-distances, best_routes = bellman_ford(forex_graph, source_index)
+# Create a dropdown to select the source
+# Create a dropdown to select the source currency pair
+source_currency = st.selectbox("Select the source currency pair", currency_pairs)
 
-# Display the best route as a chart
-chart_data = {
-    'source: [source],
-'destination': ['EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF', 'USD/CAD', 'AUD/USD', 'NZD/USD'],
-'distance': distances,
-'best_route': best_routes
-}
-st.write(chart_data)
+# Get the index of the source currency pair
+source_index = currency_index[source_currency]
+
+# Calculate the shortest distances and best routes
+distances, best_routes = bellman_ford(distances, source_index)
+
+# Display the results
+st.write("Distance from", source_currency)
+for i in range(len(currency_pairs)):
+    if i != source_index:
+        st.write(source_currency, "to", currency_pairs[i], "=", distances[i])
 
 # Highlight the best route in the chart
 best_routes = [best_routes[i] for i in range(len(best_routes))]
@@ -69,20 +64,11 @@ color_map = {
     'NZD/USD': 'pink'
 }
 
-# Create a list of colors for the edges in the chart
-edge_colors = [color_map[chart_data['destination'][i]] for i in range(len(chart_data['destination']))]
+# Display the chart
+st.line_chart(chart_data['distance'], use_container_width=True)
 
-# Create a list of edge labels for the chart
-edge_labels = [f"Best route: {chart_data['source'][best_routes[i]]} -> {chart_data['destination'][i]}" if best_routes[i] is not None else "" for i in range(len(best_routes))]
-
-# Create the chart
-st.graphviz_chart(f"""
-digraph {{
-    node [style=filled]
-    {source} [color=black, fillcolor=gray]
-    {"; ".join(chart_data['destination'])}
-    {"; ".join([f"{chart_data['source'][i]} -> {chart_data['destination'][i]} [label={chart_data['distance'][i]}]" for i in range(len(chart_data['destination']))])}
-    {"; ".join([f"{chart_data['source'][best_routes[i]]} -> {chart_data['destination'][i]} [color={color_map[chart_data['destination'][i]]}, label=\"{edge_labels[i]}\"]" for i in range(len(best_routes)) if best_routes[i] is not None])}
-}}
-""", engine='dot', format='svg', edge_attributes={'color': edge_colors})
-
+# Highlight the best route in the chart
+for i in range(len(best_routes)):
+    if best_routes[i] is not None:
+        st.line_chart([chart_data['distance'][i], chart_data['distance'][best_routes[i]]], use_container_width=True, 
+                      line_color=color_map[currency_pairs[i]])
