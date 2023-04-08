@@ -65,9 +65,10 @@ color_map = {
 }
 
 # Display the chart
-st.line_chart(chart_data['distance'], use_container_width=True)
+st.line_chart(chart_data, use_container_width=True)
 
 # Highlight the best route in the chart
 for i in range(len(best_routes)):
     if best_routes[i] is not None:
-        st.line_chart(chart_data, use_container_width=True)
+        st.line_chart([chart_data['distance'][i], chart_data['distance'][best_routes[i]]], use_container_width=True, 
+                          line_color=color_map[currency_pairs[i]])
