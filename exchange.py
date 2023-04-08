@@ -30,20 +30,19 @@ def bellman_ford(forex_graph, source):
     return distances
 
 # Define the Streamlit app
-def app():
-    st.title('Forex Bellman-Ford')
-    
-    # Get the source currency pair from the user
-    source = st.selectbox('Select the source currency pair:', ['EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF', 'USD/CAD', 'AUD/USD', 'NZD/USD'])
+st.title('Forex Bellman-Ford')
 
-    # Map the currency pair to an index in the forex graph
-    source_map = {'EUR/USD': 0, 'USD/JPY': 1, 'GBP/USD': 2, 'USD/CHF': 3, 'USD/CAD': 4, 'AUD/USD': 5, 'NZD/USD': 6}
-    source_index = source_map[source]
+# Get the source currency pair from the user
+source = st.selectbox('Select the source currency pair:', ['EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF', 'USD/CAD', 'AUD/USD', 'NZD/USD'])
 
-    # Compute the shortest distances using Bellman-Ford
-    distances = bellman_ford(forex_graph, source_index)
+# Map the currency pair to an index in the forex graph
+source_map = {'EUR/USD': 0, 'USD/JPY': 1, 'GBP/USD': 2, 'USD/CHF': 3, 'USD/CAD': 4, 'AUD/USD': 5, 'NZD/USD': 6}
+source_index = source_map[source]
 
-    # Display the shortest distances
-    for i, distance in enumerate(distances):
-        if i != source_index:
-            st.write(f"{source} to {'EUR/USD' if i == 0 else 'USD/JPY' if i == 1 else 'GBP/USD' if i == 2 else 'USD/CHF' if i == 3 else 'USD/CAD' if i == 4 else 'AUD/USD' if i == 5 else 'NZD/USD'}: {distance}")
+# Compute the shortest distances using Bellman-Ford
+distances = bellman_ford(forex_graph, source_index)
+
+# Display the shortest distances
+for i, distance in enumerate(distances):
+    if i != source_index:
+        st.write(f"{source} to {'EUR/USD' if i == 0 else 'USD/JPY' if i == 1 else 'GBP/USD' if i == 2 else 'USD/CHF' if i == 3 else 'USD/CAD' if i == 4 else 'AUD/USD' if i == 5 else 'NZD/USD'}: {distance}")
