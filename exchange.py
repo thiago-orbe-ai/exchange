@@ -24,16 +24,17 @@ forex_data = pdr.get_data_yahoo(f"{currency_from}{currency_to}=X", start_date, e
 routes = [['USD', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'EUR', 'USD']]
 best_route = None
 best_rate = None
-for route in routes:
-    rate = 1
-    for i in range(len(route)-1):
-        pair = f"{route[i]}{route[i+1]}=X"
-        rate *= pdr.get_data_yahoo(pair, start_date, end_date)['Close'].iloc[-1]
-    if not best_rate or rate > best_rate:
-        best_rate = rate
-        best_route = route
+if st.button("Run"):
+    for route in routes:
+        rate = 1
+        for i in range(len(route)-1):
+            pair = f"{route[i]}{route[i+1]}=X"
+            rate *= pdr.get_data_yahoo(pair, start_date, end_date)['Close'].iloc[-1]
+        if not best_rate or rate > best_rate:
+            best_rate = rate
+            best_route = route
 
-# Display the results
-st.write(f"The best route to exchange {currency_from} to {currency_to} is {' -> '.join(best_route)}")
-st.write(f"The exchange rate is {round(best_rate, 4)}")
-st.write(f"The amount received is {round(best_rate * amount, 2)} {currency_to}")
+    # Display the results
+    st.write(f"The best route to exchange {currency_from} to {currency_to} is {' -> '.join(best_route)}")
+    st.write(f"The exchange rate is {round(best_rate, 4)}")
+    st.write(f"The amount received is {round(best_rate * amount, 2)} {currency_to}")
