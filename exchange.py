@@ -21,7 +21,16 @@ def bellman_ford(currencies):
                         distances[k] = distances[j] + exchange_rate
     return distances
 
-currencies = st.text_input("Enter currencies separated by commas (e.g. USD,EUR,GBP)").upper().split(",")
+tickers = yf.Tickers("aapl")  # We just need a Tickers object to access the yfinance currency list
+info = tickers.tickers["aapl"].info
+
+currency_set = set()
+for ticker, data in info.items():
+    if "currency" in data:
+        currency_set.add(data["currency"])
+currency_list = sorted(list(currency_set))
+currencies = options = st.multiselect(currency_list)
+
 if st.button("Run"):
     if len(currencies) > 1:
         distances = bellman_ford(currencies)
