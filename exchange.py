@@ -1,56 +1,40 @@
-import streamlit as st
-import pandas as pd
 import numpy as np
-import yfinance as yf
-import plotly.graph_objects as go
+import streamlit as st
 
-def get_exchange_rate(from_currency, to_currency):
-    ticker = f"{from_currency}{to_currency}=X"
-    data = yf.download(tickers=ticker, period="1d", interval="1m")
-    return data["Close"].iloc[-1]
+# Define the forex graph
+forex_graph = np.array([
+    [0.0, 1.25, 0.9, 0.8],
+    [0.8, 0.0, 0.6, 0.7],
+    [1.1, 1.67, 0.0, 1.2],
+    [1.25, 1.43, 0.83, 0.0]
+])
 
-def bellman_ford(currencies, initial_amount=1):
-    n = len(currencies)
-    distances = [float("inf")] * n
-    amounts = [0] * n
-    amounts[0] = initial_amount
-    distances[0] = 0
-    for i in range(n - 1):
-        for j in range(n):
-            for k in range(n):
-                if j != k:
-                    exchange_rate = get_exchange_rate(currencies[j], currencies[k])
-                    if distances[k] > distances[j] + exchange_rate:
-                        distances[k] = distances[j] + exchange_rate
-                        amounts[k] = amounts[j] * (1 / exchange_rate)
-    for j in range(n):
-        for k in range(n):
-            if j != k:
-                exchange_rate = get_exchange_rate(currencies[j], currencies[k])
-                if distances[k] == distances[j] + exchange_rate:
-                    if amounts[k] < amounts[j] * (1 / exchange_rate):
-                        amounts[k] = amounts[j] * (1 / exchange_rate)
-    return distances, amounts
+def bellman_ford(forex_graph, source):
+    # Initialize the distances to infinity
+    distances = np.full(len(forex_graph), np.inf)
+    distances[source] = 0.0
 
-currencies = st.text_input("Enter currencies separated by commas (e.g. USD,EUR,GBP)").upper().split(",")
-initial_amount = st.number_input("Enter initial amount", min_value=0.01, value=100.0, step=0.01, format="%.2f")
-if len(currencies) > 1:
-    distances, amounts = bellman_ford(currencies, initial_amount)
-    st.write(f"The best route is {currencies[0]} -> {currencies[-1]}")
-    st.write(f"The total exchange rate is {distances[-1]:.6f}")
-    for i in range(len(currencies) - 1):
-        st.write(f"- Buy {amounts[i]:.2f} {currencies[i]}")
-        if i < len(currencies) - 1:
-            st.write(f"- Sell {amounts[i + 1]:.2f} {currencies[i + 1]}")
-    
-    # Create chart of exchange rates along the route
-    fig = go.Figure()
-    for i in range(len(currencies) - 1):
-        x = [currencies[i], currencies[i + 1]]
-        y = [get_exchange_rate(currencies[i], currencies[i + 1]), get_exchange_rate(currencies[i + 1], currencies[i])]
-        fig.add_trace(go.Scatter(x=x, y=y, mode="lines+markers", name=f"{currencies[i]} to {currencies[i + 1]}"))
-    fig.update_layout(title=f"Exchange Rates from {currencies[0]} to {currencies[-1]}")
-    st.plotly_chart(fig)
+    # Iterate over all edges n - 1 times
+    for i in range(len(forex_graph) - 1):
+        # Iterate over all edges
+        for j in range(len(forex_graph)):
+            for k in range(len(forex_graph)):
+                if forex_graph[j][k] != 0.0 and distances[j] + forex_graph[j][k] < distances[k]:
+                    distances[k] = distances[j] + forex_graph[j][k]
 
-else:
-    st.write("Please enter at least 2 currencies.")
+    return distances
+
+# Define the Streamlit app
+st.title('Forex Bellman-Ford')
+
+# Get the source currency pair from the user
+source = st.selectbox('Select the source currency pair:', ['USD/EUR', 'USD/GBP', 'USD/JPY', 'EUR/GBP'])
+
+# Map the currency pair to an index in the forex graph
+source_map = {'USD/EUR': 0, 'USD/GBP': 1, 'USD/JPY': 2, 'EUR/GBP': 3}
+source_index = source_map[source]
+
+# Compute the shortest distances using Bellman-Ford
+distances = bellman_ford(forex_graph, source_index)
+
+# Display the
