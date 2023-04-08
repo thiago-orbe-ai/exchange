@@ -60,23 +60,23 @@ start_currency = st.selectbox
 # Select the starting currency
 start_currency = st.selectbox("Select starting currency", currencies)
 # Compute the best route
-best_route = get_best_route(exchange_rates, start_currency)
+if st.button("Run"):
+    best_route = get_best_route(exchange_rates, start_currency)
+    # Display the best route
+    st.write(f"The best exchange route starting from {start_currency} is:")
+    st.write(best_route[0])
+    st.write(f"Exchange rate: {best_route[1]:.4f}")
 
-# Display the best route
-st.write(f"The best exchange route starting from {start_currency} is:")
-st.write(best_route[0])
-st.write(f"Exchange rate: {best_route[1]:.4f}")
-
-# Plot the exchange rates as a heatmap
-fig, ax = plt.subplots()
-im = ax.imshow(exchange_rates.values.astype(float), cmap="coolwarm")
-ax.set_xticks(np.arange(len(currencies)))
-ax.set_yticks(np.arange(len(currencies)))
-ax.set_xticklabels(currencies)
-ax.set_yticklabels(currencies)
-plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-ax.set_title("Exchange Rates")
-cbar = ax.figure.colorbar(im, ax=ax)
-cbar.ax.set_ylabel("Exchange Rate", rotation=-90, va="bottom")
-st.pyplot(fig)
+    # Plot the exchange rates as a heatmap
+    fig, ax = plt.subplots()
+    im = ax.imshow(exchange_rates.values.astype(float), cmap="coolwarm")
+    ax.set_xticks(np.arange(len(currencies)))
+    ax.set_yticks(np.arange(len(currencies)))
+    ax.set_xticklabels(currencies)
+    ax.set_yticklabels(currencies)
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+    ax.set_title("Exchange Rates")
+    cbar = ax.figure.colorbar(im, ax=ax)
+    cbar.ax.set_ylabel("Exchange Rate", rotation=-90, va="bottom")
+    st.pyplot(fig)
 
