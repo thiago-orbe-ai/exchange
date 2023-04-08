@@ -1,70 +1,76 @@
-import streamlit as st
-import pandas as pd
-import yfinance as yf
-import numpy as np
-from pypfopt import expected_returns, risk_models, EfficientFrontier
-from deap import algorithms, base, creator, tools
+def get_exchange_rates(currencies):
+    # Create an empty DataFrame with currencies as columns and index
+    df = pd.DataFrame(columns=currencies, index=currencies)
+    
+    # Fill the DataFrame with exchange rates
+    for i in range(len(currencies)):
+        for j in range(len(currencies)):
+            if i == j:
+                df.iloc[i,j] = 1.0
+            else:
+                pair = currencies[i] + currencies[j] + "=X"
+                data = yf.download(pair, start="2021-01-01", end="2023-04-08")
+                df.iloc[i,j] = data["Close"][-1]
+                
+    return df
 
-# Define the Streamlit app
-st.title("Stock Portfolio Optimizer with Genetic Algorithms")
+def get_best_route(df, start_currency):
+    # Create a graph from the DataFrame
+    G = nx.from_pandas_adjacency(df)
+    
+    # Compute the shortest paths from the starting currency
+    paths = nx.shortest_path(G, source=start_currency)
+    
+    # Compute the exchange rate for each path
+    exchange_rates = []
+    for currency, path in paths.items():
+        exchange_rate = 1.0
+        for i in range(len(path)-1):
+            exchange_rate *= df.loc[path[i], path[i+1]]
+        exchange_rates.append((currency, exchange_rate))
+    
+    # Sort the exchange rates and return the best route
+    best_route = sorted(exchange_rates, key=lambda x: x[1])[0]
+    
+    return best_route
 
-# Define a function to retrieve the historical price data for a given stock symbol
-def get_historical_price(symbol):
-    stock_data = yf.download(symbol)
-    return stock_data
+# Set the page title
+st.set_page_config(page_title="Exchange Route", page_icon=":money_with_wings:")
 
-# Define a function to calculate the fitness of a portfolio
-def calculate_fitness(weights, returns, cov_matrix, target_return):
-    portfolio_return = np.dot(returns, weights)
-    portfolio_volatility = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights)))
-    penalty = np.abs(portfolio_return - target_return)
-    return (1 / portfolio_volatility) - penalty
+# Define the app
+# Set the app title
+st.title("Exchange Route")
 
-# Add a text input for the list of stock symbols
-symbol_list = st.text_input("Enter a comma-separated list of stock symbols (e.g. AAPL,MSFT,AMZN)")
+# Define the available currencies
+currencies = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY"]
 
-# Add a slider for the target return
-target_return = st.slider("Target Return", min_value=0.0, max_value=1.0, value=0.1, step=0.01)
+# Get the exchange rates
+exchange_rates = get_exchange_rates(currencies)
 
-if symbol_list:
-    # Split the input string into a list of stock symbols
-    symbol_list = symbol_list.split(",")
-    symbol_list = [symbol.strip().upper() for symbol in symbol_list]
+# Select the starting currency
+start_currency = st.selectbox
 
-    # Retrieve the historical price data for each stock symbol
-    stock_data = pd.DataFrame()
-    for symbol in symbol_list:
-        data = get_historical_price(symbol)
-        data = pd.DataFrame(data['Adj Close'])
-        data.columns = [symbol]
-        stock_data = pd.concat([stock_data, data], axis=1)
+# Select the starting currency
+start_currency = st.selectbox("Select starting currency", currencies)
+IF st.button("Run"):
+    # Compute the best route
+    best_route = get_best_route(exchange_rates, start_currency)
 
-    # Calculate the expected returns and covariance matrix
-    mu = expected_returns.mean_historical_return(stock_data)
-    S = risk_models.sample_cov(stock_data)
+    # Display the best route
+    st.write(f"The best exchange route starting from {start_currency} is:")
+    st.write(best_route[0])
+    st.write(f"Exchange rate: {best_route[1]:.4f}")
 
-    # Define the fitness function
-    def fitness_function(weights):
-        return calculate_fitness(weights, mu, S, target_return)
+    # Plot the exchange rates as a heatmap
+    fig, ax = plt.subplots()
+    im = ax.imshow(exchange_rates.values.astype(float), cmap="coolwarm")
+    ax.set_xticks(np.arange(len(currencies)))
+    ax.set_yticks(np.arange(len(currencies)))
+    ax.set_xticklabels(currencies)
+    ax.set_yticklabels(currencies)
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+    ax.set_title("Exchange Rates")
+    cbar = ax.figure.colorbar(im, ax=ax)
+    cbar.ax.set_ylabel("Exchange Rate", rotation=-90, va="bottom")
+    st.pyplot(fig)
 
-    # Define the genetic algorithm
-    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-    creator.create("Individual", list, fitness=creator.FitnessMax)
-    toolbox = base.Toolbox()
-    toolbox.register("attr_weight", np.random.uniform, 0, 1)
-    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_weight, len(symbol_list))
-    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-    toolbox.register("evaluate", fitness_function)
-    toolbox.register("mate", tools.cxTwoPoint)
-    toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.2, indpb=0.1)
-    toolbox.register("select", tools.selTournament, tournsize=3)
-    population = toolbox.population(n=100)
-    offspring = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.1)
-    fits = toolbox.map(toolbox.evaluate, offspring)
-    for fit, ind in zip(fits, offspring):
-        ind.fitness.values = fit
-    best_individual = tools.selBest(offspring, k=1)[0]
-
-    # Display the optimal portfolio weights and expected returns
-    st.write(f"Optimal Portfolio Weights: {best_individual}")
-    st.write(f"Expected Returns: {calculate_fitness(best_individual, mu, S
