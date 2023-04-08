@@ -4,7 +4,7 @@ import numpy as np
 import yfinance as yf
 import plotly.graph_objects as go
 
-currencies_list = list(yf.Ticker("BTC-USD").info['quoteType']['exchangeData']['symbolList'])
+currencies_list = list(yf.Ticker("AAPL").info['quoteType']['exchangeData']['symbolList'])
 currencies_list = [x.replace("=","") for x in currencies_list]
 
 currencies = st.multiselect("Select currencies", options=currencies_list, default=["USD", "EUR"])
