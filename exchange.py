@@ -64,7 +64,7 @@ color_map = {
 }
 
 # Display the chart
-st.line_chart(chart_data, use_container_width=True)
+st.line_chart(chart_data['distance'], use_container_width=True)
 
 # Trace the best route
 st.write("Best route:")
