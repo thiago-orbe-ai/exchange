@@ -4,9 +4,12 @@ import numpy as np
 import yfinance as yf
 import plotly.graph_objects as go
 
-currencies_list = list(yf.Ticker("AAPL").info['quoteType']['exchangeData']['symbolList'])
-currencies_list = [x.replace("=","") for x in currencies_list]
+# Get list of Yfinance currencies
+tickers = yf.Tickers("aapl msft btc-usd eur-usd usd-jpy gbp-usd aud-usd usd-cad")
+currencies_set = set([ticker.info['currency'] for ticker in tickers.tickers])
+currencies_list = sorted(list(currencies_set))
 
+# Create Streamlit app
 currencies = st.multiselect("Select currencies", options=currencies_list, default=["USD", "EUR"])
 initial_amount = st.number_input("Enter initial amount", min_value=0.01, value=100.0, step=0.01, format="%.2f")
 
