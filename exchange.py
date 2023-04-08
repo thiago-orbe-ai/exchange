@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import yfinance as yf
+import plotly.graph_objects as go
 
 def get_exchange_rate(from_currency, to_currency):
     ticker = f"{from_currency}{to_currency}=X"
@@ -41,5 +42,15 @@ if len(currencies) > 1:
         st.write(f"- Buy {amounts[i]:.2f} {currencies[i]}")
         if i < len(currencies) - 1:
             st.write(f"- Sell {amounts[i + 1]:.2f} {currencies[i + 1]}")
+    
+    # Create chart of exchange rates along the route
+    fig = go.Figure()
+    for i in range(len(currencies) - 1):
+        x = [currencies[i], currencies[i + 1]]
+        y = [get_exchange_rate(currencies[i], currencies[i + 1]), get_exchange_rate(currencies[i + 1], currencies[i])]
+        fig.add_trace(go.Scatter(x=x, y=y, mode="lines+markers", name=f"{currencies[i]} to {currencies[i + 1]}"))
+    fig.update_layout(title=f"Exchange Rates from {currencies[0]} to {currencies[-1]}")
+    st.plotly_chart(fig)
+
 else:
     st.write("Please enter at least 2 currencies.")
