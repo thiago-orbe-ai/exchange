@@ -30,7 +30,7 @@ if st.button("Run"):
           for i in range(len(currency_list)):
               for j in range(i+1, len(currency_list)):
                   pair = f"{currency_list[i]}{currency_list[j]}=X"
-                  forex_data[pair] = pdr.get_data_yahoo(pair, start_date, end_date)
+                  forex_data[pair] = yf.download(pair, start=start_date, end=end_date)
 
           routes = [[currency_from, currency_to]]
           for i in range(len(currency_list)):
