@@ -1,6 +1,6 @@
 streamlit
 pandas
-numpy
-pandas_datareader
-matplotlib
 yfinance
+numpy
+PyPortfolioOpt
+deap
