@@ -4,15 +4,6 @@ import numpy as np
 import yfinance as yf
 import plotly.graph_objects as go
 
-# Get list of Yfinance currencies
-tickers = yf.Tickers("aapl msft btc-usd eur-usd usd-jpy gbp-usd aud-usd usd-cad")
-currencies_set = set([ticker.info['currency'] for ticker in tickers.tickers])
-currencies_list = sorted(list(currencies_set))
-
-# Create Streamlit app
-currencies = st.multiselect("Select currencies", options=currencies_list, default=["USD", "EUR"])
-initial_amount = st.number_input("Enter initial amount", min_value=0.01, value=100.0, step=0.01, format="%.2f")
-
 def get_exchange_rate(from_currency, to_currency):
     ticker = f"{from_currency}{to_currency}=X"
     data = yf.download(tickers=ticker, period="1d", interval="1m")
@@ -41,6 +32,8 @@ def bellman_ford(currencies, initial_amount=1):
                         amounts[k] = amounts[j] * (1 / exchange_rate)
     return distances, amounts
 
+currencies = st.text_input("Enter currencies separated by commas (e.g. USD,EUR,GBP)").upper().split(",")
+initial_amount = st.number_input("Enter initial amount", min_value=0.01, value=100.0, step=0.01, format="%.2f")
 if len(currencies) > 1:
     distances, amounts = bellman_ford(currencies, initial_amount)
     st.write(f"The best route is {currencies[0]} -> {currencies[-1]}")
@@ -60,4 +53,4 @@ if len(currencies) > 1:
     st.plotly_chart(fig)
 
 else:
-    st.write("Please select at least 2 currencies.")
+    st.write("Please enter at least 2 currencies.")
