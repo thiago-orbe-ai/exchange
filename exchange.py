@@ -17,17 +17,20 @@ amount = st.number_input("Amount to exchange", min_value=1)
 forex_data = yf.download(f"{currency_from}{currency_to}=X")["Close"]
 
 # Calculate the best forex route
+# Calculate the best forex route
 routes = [['USD', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'USD'], ['USD', 'EUR', 'JPY', 'EUR', 'JPY', 'EUR', 'USD']]
 best_route = None
 best_rate = None
-if st.button("Exchange Route"):
+if st.button("RUN"):
     for route in routes:
         rate = 1
         for i in range(len(route)-1):
-            rate *= forex_data[f"{route[i]}{route[i+1]}=X"][0]
+            pair = f"{route[i]}{route[i+1]}=X"
+            rate *= forex_data.loc[pair][0]
         if not best_rate or rate > best_rate:
             best_rate = rate
             best_route = route
+
 
     # Display the results
     st.write(f"The best route to exchange {currency_from} to {currency_to} is {' -> '.join(best_route)}")
